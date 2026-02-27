@@ -13,7 +13,7 @@ jobs:
             { platform: macos, arch: universal, os: macos-latest },
             { platform: android, arch: arm64, os: ubuntu-22.04 },
             { platform: web, arch: wasm32, os: ubuntu-22.04 },
-            { platform: web, arch: wasm32, os: ubuntu-22.04, threads: false },
+            { platform: web, arch: wasm32, os: ubuntu-22.04, nothreads: true },
           ]
         target-type: [template_debug, template_release]
 
@@ -40,7 +40,7 @@ jobs:
         uses: ./godot-cpp/.github/actions/godot-cache-restore
         with:
           scons-cache: ${{ github.workspace }}/.scons-cache/
-          cache-name: ${{ matrix.target.platform }}_${{ matrix.target.arch }}_${{ matrix.target.threads == false && 'nothreads_' || '' }}${{ matrix.target-type }}
+          cache-name: ${{ matrix.target.platform }}_${{ matrix.target.arch }}_${{ matrix.target.nothreads == true && 'nothreads_' || '' }}${{ matrix.target-type }}
 
       - name: Build GDExtension
         shell: sh
@@ -48,7 +48,7 @@ jobs:
           SCONS_CACHE: ${{ github.workspace }}/.scons-cache/
         run: |
           THREADS_FLAG=""
-          if [ "${{ matrix.target.threads }}" = "false" ]; then
+          if [ "${{ matrix.target.nothreads }}" = "true" ]; then
             THREADS_FLAG="threads=no"
           fi
           if [ "${{ matrix.target.platform }}" = "windows" ]; then
@@ -61,7 +61,7 @@ jobs:
         uses: ./godot-cpp/.github/actions/godot-cache-save
         with:
           scons-cache: ${{ github.workspace }}/.scons-cache/
-          cache-name: ${{ matrix.target.platform }}_${{ matrix.target.arch }}_${{ matrix.target.threads == false && 'nothreads_' || '' }}${{ matrix.target-type }}
+          cache-name: ${{ matrix.target.platform }}_${{ matrix.target.arch }}_${{ matrix.target.nothreads == true && 'nothreads_' || '' }}${{ matrix.target-type }}
 
       - name: Windows - Delete compilation files
         if: ${{ matrix.target.platform == 'windows' }}
@@ -72,7 +72,7 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: terrabrush-${{ matrix.target.platform }}-${{ matrix.target.arch }}-${{ matrix.target.threads == false && 'nothreads-' || '' }}${{ matrix.target-type }}
+          name: terrabrush-${{ matrix.target.platform }}-${{ matrix.target.arch }}-${{ matrix.target.nothreads == true && 'nothreads-' || '' }}${{ matrix.target-type }}
           path: |
             ${{ github.workspace }}/demo/addons/terrabrush/bin/**
 
