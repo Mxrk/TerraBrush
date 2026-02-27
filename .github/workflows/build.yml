@@ -57,6 +57,15 @@ jobs:
             scons target=${{ matrix.target-type }} platform=${{ matrix.target.platform }} arch=${{ matrix.target.arch }} $THREADS_FLAG
           fi
 
+      - name: Rename nothreads binaries
+        if: ${{ matrix.target.nothreads == true }}
+        shell: sh
+        run: |
+          cd demo/addons/terrabrush/bin
+          for f in *.wasm; do
+            mv "$f" "$(echo "$f" | sed 's/\.wasm$/.nothreads.wasm/')"
+          done
+
       - name: Save .scons_cache
         uses: ./godot-cpp/.github/actions/godot-cache-save
         with:
